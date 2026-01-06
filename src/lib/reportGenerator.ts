@@ -1,5 +1,5 @@
 import { Document, Packer, Paragraph, HeadingLevel, AlignmentType, Table, TableRow, TableCell, BorderStyle, WidthType, TextRun } from 'docx';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 
 export interface Task {
   id: string;
@@ -274,45 +274,39 @@ export const generatePdfReport = (data: ReportData, fileName: string) => {
   let yPos = 20;
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 15;
-  const maxWidth = pdf.internal.pageSize.getWidth() - 2 * margin;
 
   pdf.setFontSize(16);
   pdf.text('WEEKLY TASK REPORT', margin, yPos);
-  yPos += 15;
+  yPos += 12;
 
   pdf.setFontSize(10);
   pdf.text(`Period: ${formatDate(data.startDate)} - ${formatDate(data.endDate)}`, margin, yPos);
-  yPos += 7;
+  yPos += 6;
   pdf.text(`Generated: ${new Date().toLocaleString()}`, margin, yPos);
-  yPos += 15;
+  yPos += 12;
 
   pdf.setFontSize(12);
   pdf.text('Summary', margin, yPos);
-  yPos += 10;
+  yPos += 8;
 
   pdf.setFontSize(10);
-  const summaryData = [
-    ['Total Tasks', data.totalTasks.toString()],
-    ['Completed', data.totalCompleted.toString()],
-    ['Pending', (data.totalTasks - data.totalCompleted).toString()],
-    ['Completion Rate', `${data.completionRate}%`],
-  ];
-
-  (pdf as any).autoTable({
-    head: [['Metric', 'Value']],
-    body: summaryData,
-    startY: yPos,
-    margin: margin,
-    didDrawPage: (data: any) => {
-      yPos = data.cursor.y;
-    },
-  });
-
-  yPos += 15;
+  pdf.text(`Total Tasks: ${data.totalTasks}`, margin, yPos);
+  yPos += 5;
+  pdf.text(`Completed: ${data.totalCompleted}`, margin, yPos);
+  yPos += 5;
+  pdf.text(`Pending: ${data.totalTasks - data.totalCompleted}`, margin, yPos);
+  yPos += 5;
+  pdf.text(`Completion Rate: ${data.completionRate}%`, margin, yPos);
+  yPos += 12;
 
   const dates = Object.keys(data.tasks).sort();
+
+  pdf.setFontSize(12);
+  pdf.text('Daily Breakdown', margin, yPos);
+  yPos += 8;
+
   dates.forEach((date) => {
-    if (yPos > pageHeight - 40) {
+    if (yPos > pageHeight - 30) {
       pdf.addPage();
       yPos = 20;
     }
@@ -321,36 +315,28 @@ export const generatePdfReport = (data: ReportData, fileName: string) => {
     const completed = dayTasks.filter((t) => t.completed).length;
 
     pdf.setFontSize(11);
+    pdf.setTextColor(0, 51, 102);
     pdf.text(formatDate(date), margin, yPos);
-    yPos += 8;
+    pdf.setTextColor(0, 0, 0);
+    yPos += 6;
 
     pdf.setFontSize(9);
-    const taskRows = dayTasks.map((task) => [
-      task.completed ? '[✓]' : '[ ]',
-      task.title,
-    ]);
-
-    (pdf as any).autoTable({
-      head: [['Status', 'Task']],
-      body: taskRows,
-      startY: yPos,
-      margin: margin,
-      columnStyles: { 0: { halign: 'center', cellWidth: 15 } },
-      didDrawPage: (data: any) => {
-        yPos = data.cursor.y;
-      },
+    dayTasks.forEach((task) => {
+      if (yPos > pageHeight - 10) {
+        pdf.addPage();
+        yPos = 20;
+      }
+      const status = task.completed ? '[✓]' : '[ ]';
+      pdf.text(`  ${status} ${task.title}`, margin + 2, yPos);
+      yPos += 4;
     });
 
-    yPos += 5;
+    yPos += 2;
     pdf.setFontSize(8);
     pdf.setTextColor(100, 100, 100);
-    pdf.text(
-      `Day Summary: ${completed} of ${dayTasks.length} tasks completed`,
-      margin,
-      yPos
-    );
+    pdf.text(`Summary: ${completed}/${dayTasks.length} tasks completed`, margin + 2, yPos);
     pdf.setTextColor(0, 0, 0);
-    yPos += 10;
+    yPos += 8;
   });
 
   pdf.save(fileName);
