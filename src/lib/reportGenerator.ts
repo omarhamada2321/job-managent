@@ -274,36 +274,36 @@ export const generatePdfReport = (data: ReportData, fileName: string) => {
   let yPos = 20;
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 15;
+  const lineHeight = 5;
 
-  pdf.setFontSize(16);
-  pdf.text('WEEKLY TASK REPORT', margin, yPos);
-  yPos += 12;
+  const addText = (text: string, size: number, bold = false, color = [0, 0, 0]) => {
+    pdf.setFontSize(size);
+    pdf.setTextColor(color[0], color[1], color[2]);
+    pdf.setFont('helvetica', bold ? 'bold' : 'normal');
+    pdf.text(text, margin, yPos);
+    yPos += lineHeight;
+  };
 
-  pdf.setFontSize(10);
-  pdf.text(`Period: ${formatDate(data.startDate)} - ${formatDate(data.endDate)}`, margin, yPos);
-  yPos += 6;
-  pdf.text(`Generated: ${new Date().toLocaleString()}`, margin, yPos);
-  yPos += 12;
-
-  pdf.setFontSize(12);
-  pdf.text('Summary', margin, yPos);
-  yPos += 8;
-
-  pdf.setFontSize(10);
-  pdf.text(`Total Tasks: ${data.totalTasks}`, margin, yPos);
+  addText('WEEKLY TASK REPORT', 16, true);
   yPos += 5;
-  pdf.text(`Completed: ${data.totalCompleted}`, margin, yPos);
+
+  addText(`Period: ${formatDate(data.startDate)} - ${formatDate(data.endDate)}`, 10);
+  addText(`Generated: ${new Date().toLocaleString()}`, 10);
   yPos += 5;
-  pdf.text(`Pending: ${data.totalTasks - data.totalCompleted}`, margin, yPos);
+
+  addText('Summary', 12, true);
+  yPos += 2;
+
+  addText(`Total Tasks: ${data.totalTasks}`, 10);
+  addText(`Completed: ${data.totalCompleted}`, 10);
+  addText(`Pending: ${data.totalTasks - data.totalCompleted}`, 10);
+  addText(`Completion Rate: ${data.completionRate}%`, 10);
   yPos += 5;
-  pdf.text(`Completion Rate: ${data.completionRate}%`, margin, yPos);
-  yPos += 12;
 
   const dates = Object.keys(data.tasks).sort();
 
-  pdf.setFontSize(12);
-  pdf.text('Daily Breakdown', margin, yPos);
-  yPos += 8;
+  addText('Daily Breakdown', 12, true);
+  yPos += 3;
 
   dates.forEach((date) => {
     if (yPos > pageHeight - 30) {
@@ -316,27 +316,33 @@ export const generatePdfReport = (data: ReportData, fileName: string) => {
 
     pdf.setFontSize(11);
     pdf.setTextColor(0, 51, 102);
+    pdf.setFont('helvetica', 'bold');
     pdf.text(formatDate(date), margin, yPos);
-    pdf.setTextColor(0, 0, 0);
-    yPos += 6;
+    yPos += lineHeight + 2;
 
     pdf.setFontSize(9);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+
     dayTasks.forEach((task) => {
       if (yPos > pageHeight - 10) {
         pdf.addPage();
         yPos = 20;
       }
-      const status = task.completed ? '[✓]' : '[ ]';
-      pdf.text(`  ${status} ${task.title}`, margin + 2, yPos);
-      yPos += 4;
+      const status = task.completed ? 'X' : 'O';
+      const taskLine = `  [${status}] ${task.title}`;
+      pdf.text(taskLine, margin + 2, yPos);
+      yPos += lineHeight;
     });
 
     yPos += 2;
     pdf.setFontSize(8);
     pdf.setTextColor(100, 100, 100);
+    pdf.setFont('helvetica', 'italic');
     pdf.text(`Summary: ${completed}/${dayTasks.length} tasks completed`, margin + 2, yPos);
     pdf.setTextColor(0, 0, 0);
-    yPos += 8;
+    pdf.setFont('helvetica', 'normal');
+    yPos += lineHeight + 4;
   });
 
   pdf.save(fileName);
