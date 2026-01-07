@@ -271,79 +271,194 @@ export const generatePdfReport = (data: ReportData, fileName: string) => {
     format: 'a4',
   });
 
-  let yPos = 20;
+  let yPos = 15;
+  const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 15;
-  const lineHeight = 5;
+  const margin = 12;
+  const contentWidth = pageWidth - 2 * margin;
 
-  const addText = (text: string, size: number, bold = false, color = [0, 0, 0]) => {
+  const addHeaderBox = (title: string) => {
+    pdf.setFillColor(30, 70, 150);
+    pdf.rect(margin, yPos - 4, contentWidth, 8, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(title, margin + 3, yPos);
+    pdf.setTextColor(0, 0, 0);
+    yPos += 12;
+  };
+
+  const addSectionTitle = (title: string, color = [50, 120, 200]) => {
+    pdf.setTextColor(color[0], color[1], color[2]);
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(title, margin, yPos);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    yPos += 6;
+  };
+
+  const addDivider = () => {
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 3;
+  };
+
+  const addText = (text: string, size = 9, bold = false, color = [0, 0, 0]) => {
     pdf.setFontSize(size);
     pdf.setTextColor(color[0], color[1], color[2]);
     pdf.setFont('helvetica', bold ? 'bold' : 'normal');
-    pdf.text(text, margin, yPos);
-    yPos += lineHeight;
+    pdf.text(text, margin + 2, yPos);
+    yPos += 4.5;
   };
 
-  addText('WEEKLY TASK REPORT', 16, true);
-  yPos += 5;
+  const addMetricBox = (label: string, value: string | number, color: number[]) => {
+    const boxWidth = (contentWidth - 4) / 2;
+    const boxHeight = 14;
 
-  addText(`Period: ${formatDate(data.startDate)} - ${formatDate(data.endDate)}`, 10);
-  addText(`Generated: ${new Date().toLocaleString()}`, 10);
-  yPos += 5;
+    pdf.setFillColor(color[0], color[1], color[2]);
+    pdf.rect(margin + (boxWidth + 2) * (label === 'Total Tasks' || label === 'Completed' ? 0 : 1), yPos, boxWidth, boxHeight, 'F');
 
-  addText('Summary', 12, true);
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(label, margin + 3 + (boxWidth + 2) * (label === 'Total Tasks' || label === 'Completed' ? 0 : 1), yPos + 4);
+
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(String(value), margin + 3 + (boxWidth + 2) * (label === 'Total Tasks' || label === 'Completed' ? 0 : 1), yPos + 11);
+
+    if (label === 'Completed' || label === 'Pending') {
+      yPos += boxHeight + 2;
+    }
+  };
+
+  const checkPageBreak = (space: number) => {
+    if (yPos + space > pageHeight - 15) {
+      pdf.addPage();
+      yPos = 15;
+    }
+  };
+
+  addHeaderBox('WEEKLY TASK REPORT');
+
+  pdf.setFontSize(9);
+  pdf.setTextColor(100, 100, 100);
+  const startFormatted = formatDate(data.startDate);
+  const endFormatted = formatDate(data.endDate);
+  pdf.text(`Period: ${startFormatted} to ${endFormatted}`, margin, yPos);
+  yPos += 4;
+  pdf.text(`Generated: ${new Date().toLocaleString()}`, margin, yPos);
+  yPos += 8;
+
+  addSectionTitle('KEY METRICS', [25, 110, 200]);
+  addDivider();
+
+  const summaryStartY = yPos;
+  addMetricBox('Total Tasks', data.totalTasks, [66, 153, 225]);
+  addMetricBox('Completed', data.totalCompleted, [82, 190, 128]);
+  yPos = summaryStartY + 16;
+  addMetricBox('Pending', data.totalTasks - data.totalCompleted, [255, 152, 0]);
+  addMetricBox('Completion Rate', `${data.completionRate}%`, [156, 39, 176]);
+
+  yPos += 4;
+  checkPageBreak(10);
+
+  addDivider();
+  addSectionTitle('PERFORMANCE INSIGHT', [25, 110, 200]);
+
+  const pendingTasks = data.totalTasks - data.totalCompleted;
+  let insight = '';
+  if (data.completionRate === 100) {
+    insight = 'Excellent! All tasks completed on schedule.';
+  } else if (data.completionRate >= 80) {
+    insight = `Good progress. ${pendingTasks} task${pendingTasks !== 1 ? 's' : ''} remaining.`;
+  } else if (data.completionRate >= 50) {
+    insight = `Fair progress. ${pendingTasks} task${pendingTasks !== 1 ? 's' : ''} need attention.`;
+  } else {
+    insight = `Review priority. ${pendingTasks} task${pendingTasks !== 1 ? 's' : ''} pending.`;
+  }
+  addText(insight, 9, false, [50, 50, 50]);
   yPos += 2;
 
-  addText(`Total Tasks: ${data.totalTasks}`, 10);
-  addText(`Completed: ${data.totalCompleted}`, 10);
-  addText(`Pending: ${data.totalTasks - data.totalCompleted}`, 10);
-  addText(`Completion Rate: ${data.completionRate}%`, 10);
-  yPos += 5;
+  checkPageBreak(15);
+
+  addDivider();
+  addSectionTitle('DAILY BREAKDOWN', [25, 110, 200]);
+  yPos += 2;
 
   const dates = Object.keys(data.tasks).sort();
 
-  addText('Daily Breakdown', 12, true);
-  yPos += 3;
-
   dates.forEach((date) => {
-    if (yPos > pageHeight - 30) {
-      pdf.addPage();
-      yPos = 20;
-    }
+    checkPageBreak(12);
 
     const dayTasks = data.tasks[date];
     const completed = dayTasks.filter((t) => t.completed).length;
+    const dayRate = dayTasks.length > 0 ? Math.round((completed / dayTasks.length) * 100) : 0;
 
-    pdf.setFontSize(11);
-    pdf.setTextColor(0, 51, 102);
+    pdf.setFontSize(10);
+    pdf.setTextColor(30, 100, 200);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(formatDate(date), margin, yPos);
-    yPos += lineHeight + 2;
-
-    pdf.setFontSize(9);
+    pdf.text(`${formatShortDate(date)}  -  ${completed}/${dayTasks.length} completed (${dayRate}%)`, margin, yPos);
     pdf.setTextColor(0, 0, 0);
     pdf.setFont('helvetica', 'normal');
+    yPos += 5;
+
+    pdf.setDrawColor(220, 220, 220);
+    pdf.line(margin + 1, yPos, pageWidth - margin - 1, yPos);
+    yPos += 3;
 
     dayTasks.forEach((task) => {
-      if (yPos > pageHeight - 10) {
-        pdf.addPage();
-        yPos = 20;
-      }
-      const status = task.completed ? 'X' : 'O';
-      const taskLine = `  [${status}] ${task.title}`;
-      pdf.text(taskLine, margin + 2, yPos);
-      yPos += lineHeight;
+      checkPageBreak(5);
+
+      const status = task.completed ? 'DONE' : 'PENDING';
+      const statusColor = task.completed ? [82, 190, 128] : [255, 152, 0];
+
+      pdf.setFontSize(8);
+      pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`[${status}]`, margin + 2, yPos);
+
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      const taskX = margin + 18;
+      pdf.text(task.title, taskX, yPos);
+
+      yPos += 4.5;
     });
 
     yPos += 2;
-    pdf.setFontSize(8);
-    pdf.setTextColor(100, 100, 100);
-    pdf.setFont('helvetica', 'italic');
-    pdf.text(`Summary: ${completed}/${dayTasks.length} tasks completed`, margin + 2, yPos);
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFont('helvetica', 'normal');
-    yPos += lineHeight + 4;
   });
+
+  checkPageBreak(20);
+
+  addDivider();
+  addSectionTitle('CONCLUSION', [25, 110, 200]);
+
+  const totalCompletePercentage = data.completionRate;
+  const avgDailyCompletion = dates.length > 0
+    ? Math.round(
+        (Object.values(data.tasks).reduce((sum, dayTasks) => {
+          const completed = dayTasks.filter((t) => t.completed).length;
+          return sum + (dayTasks.length > 0 ? (completed / dayTasks.length) * 100 : 0);
+        }, 0) /
+          dates.length) as any
+      )
+    : 0;
+
+  addText(`Overall Completion: ${totalCompletePercentage}%`, 9, true, [25, 110, 200]);
+  addText(`Average Daily Completion: ${avgDailyCompletion}%`, 9);
+  addText(`Report Duration: ${dates.length} day${dates.length !== 1 ? 's' : ''} tracked`, 9);
+
+  yPos += 3;
+  pdf.setFontSize(8);
+  pdf.setTextColor(120, 120, 120);
+  pdf.text('---', margin, yPos);
+  yPos += 4;
+  pdf.text('This report provides a comprehensive overview of task completion metrics.', margin, yPos);
+  yPos += 4;
+  pdf.text('Review daily breakdowns to identify patterns and optimize future planning.', margin, yPos);
 
   pdf.save(fileName);
 };
