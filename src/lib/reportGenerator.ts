@@ -83,185 +83,190 @@ export const generateTextReport = (data: ReportData): string => {
 };
 
 export const generateWordReport = async (data: ReportData, fileName: string) => {
-  const dates = Object.keys(data.tasks).sort();
+  try {
+    const dates = Object.keys(data.tasks).sort();
 
-  const sections: Paragraph[] = [
-    new Paragraph({
-      text: 'WEEKLY TASK REPORT',
-      heading: HeadingLevel.HEADING_1,
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 200 },
-    }),
-    new Paragraph({
-      text: `Report Period: ${formatDate(data.startDate)} - ${formatDate(data.endDate)}`,
-      spacing: { after: 100 },
-    }),
-    new Paragraph({
-      text: `Generated: ${new Date().toLocaleString()}`,
-      spacing: { after: 400 },
-    }),
-    new Paragraph({
-      text: 'Summary',
-      heading: HeadingLevel.HEADING_2,
-      spacing: { after: 200 },
-    }),
-  ];
-
-  const summaryTable = new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    rows: [
-      new TableRow({
-        cells: [
-          new TableCell({
-            children: [new Paragraph({ text: 'Total Tasks', bold: true })],
-            borders: {
-              top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-            },
-          }),
-          new TableCell({
-            children: [new Paragraph(data.totalTasks.toString())],
-            borders: {
-              top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-            },
-          }),
-        ],
+    const sections: Paragraph[] = [
+      new Paragraph({
+        text: 'WEEKLY TASK REPORT',
+        heading: HeadingLevel.HEADING_1,
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 200 },
       }),
-      new TableRow({
-        cells: [
-          new TableCell({
-            children: [new Paragraph({ text: 'Completed', bold: true })],
-            borders: {
-              top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-            },
-          }),
-          new TableCell({
-            children: [new Paragraph(data.totalCompleted.toString())],
-            borders: {
-              top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-            },
-          }),
-        ],
+      new Paragraph({
+        text: `Report Period: ${formatDate(data.startDate)} - ${formatDate(data.endDate)}`,
+        spacing: { after: 100 },
       }),
-      new TableRow({
-        cells: [
-          new TableCell({
-            children: [new Paragraph({ text: 'Pending', bold: true })],
-            borders: {
-              top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-            },
-          }),
-          new TableCell({
-            children: [new Paragraph((data.totalTasks - data.totalCompleted).toString())],
-            borders: {
-              top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-            },
-          }),
-        ],
+      new Paragraph({
+        text: `Generated: ${new Date().toLocaleString()}`,
+        spacing: { after: 400 },
       }),
-      new TableRow({
-        cells: [
-          new TableCell({
-            children: [new Paragraph({ text: 'Completion Rate', bold: true })],
-            borders: {
-              top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-            },
-          }),
-          new TableCell({
-            children: [new Paragraph(`${data.completionRate}%`)],
-            borders: {
-              top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-              right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
-            },
-          }),
-        ],
+      new Paragraph({
+        text: 'Summary',
+        heading: HeadingLevel.HEADING_2,
+        spacing: { after: 200 },
       }),
-    ],
-  });
+    ];
 
-  sections.push(summaryTable);
-  sections.push(new Paragraph({ text: '', spacing: { after: 400 } }));
-  sections.push(
-    new Paragraph({
-      text: 'Daily Breakdown',
-      heading: HeadingLevel.HEADING_2,
-      spacing: { after: 200 },
-    })
-  );
+    const summaryTable = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          cells: [
+            new TableCell({
+              children: [new Paragraph({ text: 'Total Tasks', bold: true })],
+              borders: {
+                top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+              },
+            }),
+            new TableCell({
+              children: [new Paragraph(data.totalTasks.toString())],
+              borders: {
+                top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+              },
+            }),
+          ],
+        }),
+        new TableRow({
+          cells: [
+            new TableCell({
+              children: [new Paragraph({ text: 'Completed', bold: true })],
+              borders: {
+                top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+              },
+            }),
+            new TableCell({
+              children: [new Paragraph(data.totalCompleted.toString())],
+              borders: {
+                top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+              },
+            }),
+          ],
+        }),
+        new TableRow({
+          cells: [
+            new TableCell({
+              children: [new Paragraph({ text: 'Pending', bold: true })],
+              borders: {
+                top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+              },
+            }),
+            new TableCell({
+              children: [new Paragraph((data.totalTasks - data.totalCompleted).toString())],
+              borders: {
+                top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+              },
+            }),
+          ],
+        }),
+        new TableRow({
+          cells: [
+            new TableCell({
+              children: [new Paragraph({ text: 'Completion Rate', bold: true })],
+              borders: {
+                top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+              },
+            }),
+            new TableCell({
+              children: [new Paragraph(`${data.completionRate}%`)],
+              borders: {
+                top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+                right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+              },
+            }),
+          ],
+        }),
+      ],
+    });
 
-  dates.forEach((date) => {
-    const dayTasks = data.tasks[date];
-    const completed = dayTasks.filter((t) => t.completed).length;
-
+    sections.push(summaryTable);
+    sections.push(new Paragraph({ text: '', spacing: { after: 400 } }));
     sections.push(
       new Paragraph({
-        text: `${formatDate(date)}`,
-        heading: HeadingLevel.HEADING_3,
-        spacing: { before: 200, after: 100 },
+        text: 'Daily Breakdown',
+        heading: HeadingLevel.HEADING_2,
+        spacing: { after: 200 },
       })
     );
 
-    dayTasks.forEach((task) => {
-      const status = task.completed ? '✓' : '○';
+    dates.forEach((date) => {
+      const dayTasks = data.tasks[date];
+      const completed = dayTasks.filter((t) => t.completed).length;
+
       sections.push(
         new Paragraph({
-          children: [
-            new TextRun({ text: `${status} `, bold: true }),
-            new TextRun({ text: task.title, strike: task.completed }),
-          ],
-          spacing: { after: 50 },
+          text: `${formatDate(date)}`,
+          heading: HeadingLevel.HEADING_3,
+          spacing: { before: 200, after: 100 },
+        })
+      );
+
+      dayTasks.forEach((task) => {
+        const status = task.completed ? 'DONE' : 'PENDING';
+        sections.push(
+          new Paragraph({
+            children: [
+              new TextRun({ text: `[${status}] `, bold: true, color: task.completed ? '52BE80' : 'FF9800' }),
+              new TextRun({ text: task.title, strike: task.completed }),
+            ],
+            spacing: { after: 50 },
+          })
+        );
+      });
+
+      sections.push(
+        new Paragraph({
+          text: `Day Summary: ${completed} of ${dayTasks.length} tasks completed`,
+          spacing: { after: 200 },
+          italics: true,
         })
       );
     });
 
-    sections.push(
-      new Paragraph({
-        text: `Day Summary: ${completed} of ${dayTasks.length} tasks completed`,
-        spacing: { after: 200 },
-        italics: true,
-      })
-    );
-  });
+    const doc = new Document({
+      sections: [
+        {
+          children: sections,
+        },
+      ],
+    });
 
-  const doc = new Document({
-    sections: [
-      {
-        children: sections,
-      },
-    ],
-  });
-
-  const blob = await Packer.toBlob(doc);
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+  } catch (error) {
+    console.error('Error generating Word report:', error);
+    throw error;
+  }
 };
 
 export const generatePdfReport = (data: ReportData, fileName: string) => {
@@ -271,101 +276,98 @@ export const generatePdfReport = (data: ReportData, fileName: string) => {
     format: 'a4',
   });
 
-  let yPos = 15;
+  let yPos = 12;
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 12;
+  const margin = 10;
   const contentWidth = pageWidth - 2 * margin;
 
-  const addHeaderBox = (title: string) => {
-    pdf.setFillColor(30, 70, 150);
-    pdf.rect(margin, yPos - 4, contentWidth, 8, 'F');
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(title, margin + 3, yPos);
-    pdf.setTextColor(0, 0, 0);
-    yPos += 12;
-  };
-
-  const addSectionTitle = (title: string, color = [50, 120, 200]) => {
-    pdf.setTextColor(color[0], color[1], color[2]);
-    pdf.setFontSize(11);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(title, margin, yPos);
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFont('helvetica', 'normal');
-    yPos += 6;
-  };
-
-  const addDivider = () => {
-    pdf.setDrawColor(200, 200, 200);
-    pdf.line(margin, yPos, pageWidth - margin, yPos);
-    yPos += 3;
+  const checkPageBreak = (space: number) => {
+    if (yPos + space > pageHeight - 12) {
+      pdf.addPage();
+      yPos = 12;
+    }
   };
 
   const addText = (text: string, size = 9, bold = false, color = [0, 0, 0]) => {
     pdf.setFontSize(size);
     pdf.setTextColor(color[0], color[1], color[2]);
     pdf.setFont('helvetica', bold ? 'bold' : 'normal');
-    pdf.text(text, margin + 2, yPos);
-    yPos += 4.5;
+    pdf.text(text, margin, yPos);
+    yPos += size === 8 ? 3.5 : 4.5;
   };
 
-  const addMetricBox = (label: string, value: string | number, color: number[]) => {
-    const boxWidth = (contentWidth - 4) / 2;
-    const boxHeight = 14;
-
-    pdf.setFillColor(color[0], color[1], color[2]);
-    pdf.rect(margin + (boxWidth + 2) * (label === 'Total Tasks' || label === 'Completed' ? 0 : 1), yPos, boxWidth, boxHeight, 'F');
-
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(9);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(label, margin + 3 + (boxWidth + 2) * (label === 'Total Tasks' || label === 'Completed' ? 0 : 1), yPos + 4);
-
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(String(value), margin + 3 + (boxWidth + 2) * (label === 'Total Tasks' || label === 'Completed' ? 0 : 1), yPos + 11);
-
-    if (label === 'Completed' || label === 'Pending') {
-      yPos += boxHeight + 2;
-    }
+  const addDivider = () => {
+    pdf.setDrawColor(180, 180, 180);
+    pdf.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 2;
   };
 
-  const checkPageBreak = (space: number) => {
-    if (yPos + space > pageHeight - 15) {
-      pdf.addPage();
-      yPos = 15;
-    }
-  };
+  pdf.setFillColor(30, 70, 150);
+  pdf.rect(margin - 1, yPos - 3, contentWidth + 2, 7, 'F');
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFontSize(14);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('WEEKLY TASK REPORT', margin + 2, yPos);
+  pdf.setTextColor(0, 0, 0);
+  yPos += 10;
 
-  addHeaderBox('WEEKLY TASK REPORT');
-
-  pdf.setFontSize(9);
+  pdf.setFontSize(8);
   pdf.setTextColor(100, 100, 100);
   const startFormatted = formatDate(data.startDate);
   const endFormatted = formatDate(data.endDate);
   pdf.text(`Period: ${startFormatted} to ${endFormatted}`, margin, yPos);
-  yPos += 4;
+  yPos += 3;
   pdf.text(`Generated: ${new Date().toLocaleString()}`, margin, yPos);
-  yPos += 8;
+  yPos += 6;
 
-  addSectionTitle('KEY METRICS', [25, 110, 200]);
+  pdf.setTextColor(25, 110, 200);
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('KEY METRICS', margin, yPos);
+  pdf.setTextColor(0, 0, 0);
+  yPos += 4;
+
   addDivider();
 
-  const summaryStartY = yPos;
-  addMetricBox('Total Tasks', data.totalTasks, [66, 153, 225]);
-  addMetricBox('Completed', data.totalCompleted, [82, 190, 128]);
-  yPos = summaryStartY + 16;
-  addMetricBox('Pending', data.totalTasks - data.totalCompleted, [255, 152, 0]);
-  addMetricBox('Completion Rate', `${data.completionRate}%`, [156, 39, 176]);
+  const boxWidth = (contentWidth - 2) / 2;
+  const metrics = [
+    { label: 'Total Tasks', value: data.totalTasks, color: [66, 153, 225] },
+    { label: 'Completed', value: data.totalCompleted, color: [82, 190, 128] },
+    { label: 'Pending', value: data.totalTasks - data.totalCompleted, color: [255, 152, 0] },
+    { label: 'Completion Rate', value: `${data.completionRate}%`, color: [156, 39, 176] },
+  ];
 
-  yPos += 4;
+  let col = 0;
+  let rowYPos = yPos;
+  metrics.forEach((metric) => {
+    const xPos = margin + col * (boxWidth + 1);
+    pdf.setFillColor(metric.color[0], metric.color[1], metric.color[2]);
+    pdf.rect(xPos, rowYPos, boxWidth, 10, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(metric.label, xPos + 2, rowYPos + 3);
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(String(metric.value), xPos + 2, rowYPos + 8);
+    col++;
+    if (col === 2) {
+      col = 0;
+      rowYPos += 11;
+    }
+  });
+
+  yPos = rowYPos + 2;
   checkPageBreak(10);
 
+  pdf.setTextColor(25, 110, 200);
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('PERFORMANCE INSIGHT', margin, yPos);
+  pdf.setTextColor(0, 0, 0);
+  yPos += 4;
   addDivider();
-  addSectionTitle('PERFORMANCE INSIGHT', [25, 110, 200]);
 
   const pendingTasks = data.totalTasks - data.totalCompleted;
   let insight = '';
@@ -378,63 +380,69 @@ export const generatePdfReport = (data: ReportData, fileName: string) => {
   } else {
     insight = `Review priority. ${pendingTasks} task${pendingTasks !== 1 ? 's' : ''} pending.`;
   }
-  addText(insight, 9, false, [50, 50, 50]);
-  yPos += 2;
+  addText(insight, 8, false, [50, 50, 50]);
+  yPos += 1;
 
-  checkPageBreak(15);
+  checkPageBreak(12);
 
+  pdf.setTextColor(25, 110, 200);
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('DAILY BREAKDOWN', margin, yPos);
+  pdf.setTextColor(0, 0, 0);
+  yPos += 4;
   addDivider();
-  addSectionTitle('DAILY BREAKDOWN', [25, 110, 200]);
-  yPos += 2;
 
   const dates = Object.keys(data.tasks).sort();
 
   dates.forEach((date) => {
-    checkPageBreak(12);
+    checkPageBreak(8);
 
     const dayTasks = data.tasks[date];
     const completed = dayTasks.filter((t) => t.completed).length;
     const dayRate = dayTasks.length > 0 ? Math.round((completed / dayTasks.length) * 100) : 0;
 
-    pdf.setFontSize(10);
+    pdf.setFontSize(9);
     pdf.setTextColor(30, 100, 200);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(`${formatShortDate(date)}  -  ${completed}/${dayTasks.length} completed (${dayRate}%)`, margin, yPos);
+    pdf.text(`${formatShortDate(date)} | ${completed}/${dayTasks.length} (${dayRate}%)`, margin, yPos);
     pdf.setTextColor(0, 0, 0);
     pdf.setFont('helvetica', 'normal');
-    yPos += 5;
-
-    pdf.setDrawColor(220, 220, 220);
-    pdf.line(margin + 1, yPos, pageWidth - margin - 1, yPos);
-    yPos += 3;
+    yPos += 3.5;
 
     dayTasks.forEach((task) => {
-      checkPageBreak(5);
+      checkPageBreak(3);
 
       const status = task.completed ? 'DONE' : 'PENDING';
       const statusColor = task.completed ? [82, 190, 128] : [255, 152, 0];
 
-      pdf.setFontSize(8);
+      pdf.setFontSize(7.5);
       pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(`[${status}]`, margin + 2, yPos);
+      pdf.text(`[${status}]`, margin + 1, yPos);
 
       pdf.setTextColor(0, 0, 0);
       pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(9);
-      const taskX = margin + 18;
-      pdf.text(task.title, taskX, yPos);
+      const taskX = margin + 15;
+      const maxWidth = pageWidth - taskX - margin - 2;
+      const textLines = pdf.splitTextToSize(task.title, maxWidth);
+      pdf.text(textLines, taskX, yPos);
 
-      yPos += 4.5;
+      yPos += textLines.length * 3.2;
     });
 
     yPos += 2;
   });
 
-  checkPageBreak(20);
+  checkPageBreak(15);
 
+  pdf.setTextColor(25, 110, 200);
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('CONCLUSION', margin, yPos);
+  pdf.setTextColor(0, 0, 0);
+  yPos += 4;
   addDivider();
-  addSectionTitle('CONCLUSION', [25, 110, 200]);
 
   const totalCompletePercentage = data.completionRate;
   const avgDailyCompletion = dates.length > 0
@@ -447,17 +455,15 @@ export const generatePdfReport = (data: ReportData, fileName: string) => {
       )
     : 0;
 
-  addText(`Overall Completion: ${totalCompletePercentage}%`, 9, true, [25, 110, 200]);
-  addText(`Average Daily Completion: ${avgDailyCompletion}%`, 9);
-  addText(`Report Duration: ${dates.length} day${dates.length !== 1 ? 's' : ''} tracked`, 9);
+  addText(`Overall Completion: ${totalCompletePercentage}%`, 8, true, [25, 110, 200]);
+  addText(`Average Daily Completion: ${avgDailyCompletion}%`, 8);
+  addText(`Report Duration: ${dates.length} day${dates.length !== 1 ? 's' : ''} tracked`, 8);
 
-  yPos += 3;
-  pdf.setFontSize(8);
-  pdf.setTextColor(120, 120, 120);
-  pdf.text('---', margin, yPos);
-  yPos += 4;
+  pdf.setFontSize(7);
+  pdf.setTextColor(150, 150, 150);
+  yPos += 2;
   pdf.text('This report provides a comprehensive overview of task completion metrics.', margin, yPos);
-  yPos += 4;
+  yPos += 3;
   pdf.text('Review daily breakdowns to identify patterns and optimize future planning.', margin, yPos);
 
   pdf.save(fileName);
